@@ -1,4 +1,4 @@
-import React, {FC, useEffect, useMemo, useRef, useState} from "react";
+import React, {FC, ReactNode, useEffect, useMemo, useRef, useState} from "react";
 
 import {RenderContext} from "../RenderContext";
 import {RenderManager} from "../RenderManager";
@@ -14,7 +14,23 @@ export interface BaseProps extends Events {
     miterLimit?: number;
 }
 
-const Canvas: FC = ({children}) => {
+
+interface CanvasProps<T = unknown> {
+    children?:ReactNode[],
+    src?:string;
+}
+
+const drawBackground = (ctx:CanvasRenderingContext2D, src:string) => new Promise((resolve, reject) => {
+    const background = new Image();
+    background.src = src;
+    background.onload = () => {
+        ctx.drawImage(background, 0, 0);
+        resolve(ctx);
+    };
+    background.onerror = reject;
+});
+
+const Canvas: FC<CanvasProps> = ({children, src}:CanvasProps) => {
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
     const [ctx, setCtx] = useState<CanvasRenderingContext2D | null>(null);
     const renderManager = useMemo(() => {
@@ -30,7 +46,12 @@ const Canvas: FC = ({children}) => {
                 const rect = canvasRef.current.getBoundingClientRect();
                 canvasRef.current.width = rect.width;
                 canvasRef.current.height = rect.height;
-                setCtx(currentCtx);
+                if (src) {
+                    drawBackground(currentCtx, src).
+                        then(() => setCtx(currentCtx));
+                } else {
+                    setCtx(currentCtx);
+                }
             }
         }
     }, []);

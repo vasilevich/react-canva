@@ -1,4 +1,4 @@
-import { FC } from "react";
+import { FC, ReactNode } from "react";
 import { Events } from "../Types";
 export interface BaseProps extends Events {
     stroke?: string;
@@ -9,5 +9,9 @@ export interface BaseProps extends Events {
     lineWidth?: number;
     miterLimit?: number;
 }
-declare const Canvas: FC;
+interface CanvasProps<T = unknown> {
+    children?: ReactNode[];
+    src?: string;
+}
+declare const Canvas: FC<CanvasProps>;
 export default Canvas;

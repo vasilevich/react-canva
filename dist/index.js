@@ -76,8 +76,17 @@
         return RenderManager;
     }());
 
+    var drawBackground = function (ctx, src) { return new Promise(function (resolve, reject) {
+        var background = new Image();
+        background.src = src;
+        background.onload = function () {
+            ctx.drawImage(background, 0, 0);
+            resolve(ctx);
+        };
+        background.onerror = reject;
+    }); };
     var Canvas = function (_a) {
-        var children = _a.children;
+        var children = _a.children, src = _a.src;
         var canvasRef = React.useRef(null);
         var _b = React.useState(null), ctx = _b[0], setCtx = _b[1];
         var renderManager = React.useMemo(function () {
@@ -88,12 +97,18 @@
         }, [ctx]);
         React.useEffect(function () {
             if (canvasRef.current) {
-                var currentCtx = canvasRef.current.getContext("2d");
-                if (currentCtx) {
+                var currentCtx_1 = canvasRef.current.getContext("2d");
+                if (currentCtx_1) {
                     var rect = canvasRef.current.getBoundingClientRect();
                     canvasRef.current.width = rect.width;
                     canvasRef.current.height = rect.height;
-                    setCtx(currentCtx);
+                    if (src) {
+                        drawBackground(currentCtx_1, src).
+                            then(function () { return setCtx(currentCtx_1); });
+                    }
+                    else {
+                        setCtx(currentCtx_1);
+                    }
                 }
             }
         }, []);
